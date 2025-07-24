@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register - Oxelion</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap">
+    <style>
+        /* Modern Color Theme from index.html */
+        :root {
+            --primary: #2a9d8f;
+            --secondary: #264653;
+            --accent: #e9c46a;
+            --light: #f4f9f9;
+            --dark: #2b2d42;
+            --text: #333333;
+            --background: #ffffff;
+            --card-bg: #f8f9fa;
+            --success: #4CAF50;
+            --error: #e63946;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Loading Page Styles */
+        #loading-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 10000;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        .loading-logo {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .loading-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+        
+        .loading-spinner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: var(--primary);
+            border-right-color: var(--primary);
+            animation: spin 1.2s linear infinite;
+        }
+        
+        .loading-inner {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--accent);
+            border-right-color: var(--accent);
+            animation: spinReverse 1.5s linear infinite;
+        }
+        
+        .loading-center {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(42, 157, 143, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes spinReverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.7; }
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .loading-text {
+            margin-top: 30px;
+            color: var(--light);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-top: 15px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .loading-progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary);
+            border-radius: 2px;
+            animation: progressBar 1.5s ease-in-out forwards;
+        }
+        
+        @keyframes progressBar {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow-y: auto; /* Allow scrolling on smaller screens */
+            position: relative;
+        }
+
+        /* Background shapes from index.html hero */
+        .background-shapes {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .background-shapes .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(42, 157, 143, 0.08);
+            animation: float 25s infinite linear;
+        }
+        .shape1 { width: 400px; height: 400px; top: -150px; left: -150px; }
+        .shape2 { width: 500px; height: 500px; bottom: -200px; right: -200px; animation-duration: 30s; }
+        .shape3 { width: 250px; height: 250px; bottom: 10%; left: 20%; animation-duration: 20s; }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+            100% { transform: translateY(0) rotate(360deg); }
+        }
+
+        /* Main container */
+        .auth-container {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;
+            min-height: 700px;
+            background: var(--background);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Illustration side (left) */
+        .auth-illustration {
+            flex: 1;
+            background: linear-gradient(135deg, var(--secondary) 0%, #1a2a32 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .auth-illustration-content {
+            z-index: 2;
+        }
+        
+        .auth-illustration .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-illustration h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .auth-illustration p {
+            font-size: 1.1rem;
+            max-width: 350px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .home-button {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .home-button:hover {
+            background-color: #217f74;
+            transform: translateY(-2px);
+        }
+
+        /* Form side (right) */
+        .auth-form-section {
+            flex: 1.2;
+            padding: 3rem;
+            display: flex;
+            align-items: center; /* Vertically center the form container */
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+            position: relative; /* This is crucial for containing the absolute children */
+            min-height: 520px; /* Give a consistent height to prevent jumps */
+        }
+
+        .form-transition {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; /* Ensure it takes full width of the container */
+        }
+
+        #loginForm {
+            opacity: 1;
+            transform: translateX(0);
+            z-index: 2;
+        }
+
+        #registerForm {
+            opacity: 0;
+            transform: translateX(30px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .auth-form-section.register-active #loginForm {
+            opacity: 0;
+            transform: translateX(-30px);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .auth-form-section.register-active #registerForm {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            z-index: 2;
+        }
+
+        .auth-title {
+            margin-top: -60px;
+            font-size: 2.2rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .auth-subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .auth-social-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-social-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        .auth-social-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background-color: rgba(42, 157, 143, 0.05);
+        }
+        
+        .auth-or {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .auth-or::before, .auth-or::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        .auth-or::before { left: 0; }
+        .auth-or::after { right: 0; }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .auth-form input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.2);
+        }
+
+        .auth-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-options a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .auth-form-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-form-btn:hover {
+            background: #217f74;
+            transform: translateY(-2px);
+        }
+
+        .auth-toggle-link {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1rem;
+        }
+
+        .auth-toggle-link a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        .status-message.success { background: rgba(76, 175, 80, 0.15); color: var(--success); }
+        .status-message.error { background: rgba(230, 57, 70, 0.15); color: var(--error); }
+        .status-message.info { background: rgba(33, 150, 243, 0.15); color: #2196F3; }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .auth-container {
+                flex-direction: column;
+                min-height: auto;
+                max-width: 500px;
+            }
+            .auth-title{
+                margin-top: 0px;
+            }
+            .auth-illustration {
+                padding: 3rem 2rem;
+            }
+            .auth-form-section {
+                padding: 3rem 2rem;
+            }
+            .form-container {
+                min-height: auto; /* Let height be natural on mobile */
+                position: static; /* No need for absolute positioning on mobile */
+            }
+            .form-transition {
+                position: static; /* Forms will stack naturally */
+                transform: none !important; /* Remove transforms */
+                opacity: 1 !important; /* Always visible */
+                pointer-events: auto !important;
+                display: none; /* Hide/show with display */
+            }
+            #loginForm {
+                display: block; /* Initially show login form */
+            }
+            .auth-form-section.register-active #loginForm {
+                display: none;
+            }
+            .auth-form-section.register-active #registerForm {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+            .auth-title{
+                margin-top: 0px;
+            }
+            .auth-container {
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            .auth-form-section {
+                padding: 2.5rem 1.5rem;
+            }
+            .auth-title {
+                font-size: 1.8rem;
+            }
+            .loading-logo {
+                font-size: 2rem;
+            }
+            .loading-container {
+                width: 100px;
+                height: 100px;
+            }
+            .loading-inner {
+                width: 80px;
+                height: 80px;
+                top: 10px;
+                left: 10px;
+            }
+            .loading-center {
+                top: 20px;
+                left: 20px;
+                width: 60px;
+                height: 60px;
+            }
+            .loading-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-page">
+        <div class="loading-logo">Oxelion</div>
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-inner"></div>
+            <div class="loading-center">
+                <div class="loading-dot"></div>
+            </div>
+        </div>
+        <div class="loading-text">SECURE AUTHENTICATION</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Main Content (initially hidden) -->
+    <div class="background-shapes">
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+        <div class="shape shape3"></div>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-illustration">
+            <div class="auth-illustration-content">
+                <div class="logo">Oxelion</div>
+                <h2>Join Our Community</h2>
+                <p>Unlock access to exclusive projects, resources, and a network of creative developers. Let's build the future together.</p>
+                <a href="index.html" class="home-button">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+            </div>
+        </div>
+        <div class="auth-form-section" id="formSection">
+            <div class="form-container">
+                <div id="loginForm" class="form-transition">
+                    <h2 class="auth-title">Welcome Back!</h2>
+                    <p class="auth-subtitle">Please enter your details to sign in.</p>
+                    <div id="loginStatus" class="status-message"></div>
+                    <div class="auth-social-row">
+                        <button class="auth-social-btn" id="googleLogin"><i class="fab fa-google"></i></button>
+                        <button class="auth-social-btn" id="githubLogin"><i class="fab fa-github"></i></button>
+                        <button class="auth-social-btn" id="linkedinLogin"><i class="fab fa-linkedin-in"></i></button>
+                    </div>
+                    <div class="auth-or">or</div>
+                    <form class="auth-form" id="loginFormElement">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" required>
+                        </div>
+                        <div class="auth-options">
+                            <label><input type="checkbox" id="remember"> Remember me</label>
+                            <a href="#" id="forgotPassword">Forgot Password?</a>
+                        </div>
+                        <button type="submit" class="auth-form-btn">Sign In</button>
+                    </form>
+                    <p class="auth-toggle-link">
+                        <span>Don't have an account?</span><a id="showRegister">Sign up</a>
+                    </p>
+                </div>
+
+                <div id="registerForm" class="form-transition">
+                    <h2 class="auth-title">Create Account</h2>
+                    <p class="auth-subtitle">Let's get you started on your journey.</p>
+                    <div id="registerStatus" class="status-message"></div>
+                    <form class="auth-form" id="registerFormElement">
+                        <div class="form-group">
+                            <label for="register-name">Full Name</label>
+                            <input type="text" id="register-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input type="password" id="register-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-confirm-password">Confirm Password</label>
+                            <input type="password" id="register-confirm-password" required>
+                        </div>
+                        <button type="submit" class="auth-form-btn">Sign Up</button>
+                    </form>
+                    <p class="auth-toggle-link">
+                        <span>Already have an account?</span><a id="showLogin">Sign in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    
+    <script>
+        // Hide the main content initially
+        document.querySelector('.auth-container').style.opacity = '0';
+        document.querySelector('.background-shapes').style.opacity = '0';
+        
+        // Show loading screen for 0.5 seconds
+        setTimeout(() => {
+            const loadingPage = document.getElementById('loading-page');
+            loadingPage.style.opacity = '0';
+            loadingPage.style.visibility = 'hidden';
+            
+            // Show main content
+            document.querySelector('.auth-container').style.opacity = '1';
+            document.querySelector('.background-shapes').style.opacity = '1';
+        }, 500);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Firebase Configuration ---
+            const firebaseConfig = {
+                apiKey: "AIzaSyATnAziN-i_XuipwmNNL54Uo32Lp6gixIo",
+                authDomain: "personal-project-62960.firebaseapp.com",
+                projectId: "personal-project-62960",
+                storageBucket: "personal-project-62960.appspot.com",
+                messagingSenderId: "764447192852",
+                appId: "1:764447192852:web:185a024bcd9a1a504bf401",
+                measurementId: "G-NXDQT7BF8E"
+            };
+            
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            const auth = firebase.auth();
+            const googleProvider = new firebase.auth.GoogleAuthProvider();
+            const githubProvider = new firebase.auth.GithubAuthProvider();
+
+            // --- DOM Elements ---
+            const formSection = document.getElementById('formSection');
+            const showRegisterBtn = document.getElementById('showRegister');
+            const showLoginBtn = document.getElementById('showLogin');
+            const loginFormEl = document.getElementById('loginFormElement');
+            const registerFormEl = document.getElementById('registerFormElement');
+            const forgotPasswordLink = document.getElementById('forgotPassword');
+            
+            // --- Responsive Form Toggling ---
+            function isMobile() {
+                return window.innerWidth <= 992;
+            }
+
+            function showRegisterForm() {
+                if (isMobile()) {
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('registerForm').style.display = 'block';
+                } else {
+                    formSection.classList.add('register-active');
+                }
+                hideStatus('loginStatus');
+            }
+
+            function showLoginForm() {
+                if (isMobile()) {
+                    document.getElementById('loginForm').style.display = 'block';
+                    document.getElementById('registerForm').style.display = 'none';
+                } else {
+                    formSection.classList.remove('register-active');
+                }
+                hideStatus('registerStatus');
+            }
+
+            showRegisterBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showRegisterForm();
+            });
+
+            showLoginBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showLoginForm();
+            });
+
+            // --- Status Message Handling ---
+            function showStatus(elementId, type, message) {
+                const element = document.getElementById(elementId);
+                element.textContent = message;
+                element.className = `status-message ${type}`;
+                element.style.display = 'block';
+            }
+
+            function hideStatus(elementId) {
+                document.getElementById(elementId).style.display = 'none';
+            }
+
+            // --- Authentication Logic ---
+
+            // Email/Password Registration
+            registerFormEl.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('register-name').value;
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                const confirmPassword = document.getElementById('register-confirm-password').value;
+
+                hideStatus('registerStatus');
+
+                if (password !== confirmPassword) {
+                    showStatus('registerStatus', 'error', 'Passwords do not match.');
+                    return;
+                }
+
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        return userCredential.user.updateProfile({
+                            displayName: name
+                        });
+                    })
+                    .then(() => {
+                        showStatus('registerStatus', 'success', 'Account created! Please sign in.');
+                        setTimeout(showLoginForm, 2000);
+                    })
+                    .catch((error) => {
+                        showStatus('registerStatus', 'error', error.message);
+                    });
+            });
+
+            // Email/Password Login
+            loginFormEl.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                hideStatus('loginStatus');
+
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        showStatus('loginStatus', 'success', 'Login successful! Redirecting...');
+                        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+                    })
+                    .catch((error) => {
+                        showStatus('loginStatus', 'error', error.message);
+                    });
+            });
+
+            // Password Reset
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                if (!email) {
+                    showStatus('loginStatus', 'error', 'Please enter your email to reset password.');
+                    return;
+                }
+                
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        showStatus('loginStatus', 'info', 'Password reset email sent!');
+                    })
+                    .catch((error) => {
+                        showStatus('loginStatus', 'error', error.message);
+                    });
+            });
+
+            // --- Social Logins ---
+            function handleSocialLogin(provider) {
+                auth.signInWithPopup(provider)
+                    .then((result) => {
+                        showStatus('loginStatus', 'success', 'Login successful! Redirecting...');
+                        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+                    }).catch((error) => {
+                        showStatus('loginStatus', 'error', `Error with ${provider.providerId}: ${error.message}`);
+                    });
+            }
+
+            document.getElementById('googleLogin').addEventListener('click', () => {
+                handleSocialLogin(googleProvider);
+            });
+
+            document.getElementById('githubLogin').addEventListener('click', () => {
+                handleSocialLogin(githubProvider);
+            });
+
+            document.getElementById('linkedinLogin').addEventListener('click', () => {
+                // Note: LinkedIn requires specific setup in Firebase console
+                showStatus('loginStatus', 'info', 'LinkedIn login is currently under development.');
+            });
+        });
+    </script>
+</body>
+</html>

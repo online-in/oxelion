@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat - Oxelion</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Modern Color Theme & Base Styles */
+        :root {
+            --primary: #2a9d8f;
+            --secondary: #264653;
+            --accent: #e9c46a;
+            --light: #f4f9f9;
+            --dark: #2b2d42;
+            --text: #333333;
+            --background: #ffffff;
+            --nav-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--light);
+            overflow-x: hidden;
+        }
+        
+        /* Header & Navigation */
+        header {
+            background: var(--background);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        nav.nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            height: var(--nav-height);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: none; /* Hidden on mobile by default */
+        }
+
+        @media (min-width: 768px) {
+            .nav-links {
+                display: flex;
+                gap: 1.5rem;
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 1.1rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a.active,
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a.active::after,
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .primary-button {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: none; /* Hidden on mobile */
+        }
+
+         @media (min-width: 768px) {
+            .primary-button {
+                display: inline-block;
+            }
+        }
+
+        .primary-button:hover {
+            background-color: #217f74;
+            transform: translateY(-2px);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-button { 
+            display: block; /* Shown on mobile */
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark);
+            cursor: pointer;
+        }
+
+        @media (min-width: 768px) {
+            .mobile-menu-button {
+                display: none;
+            }
+        }
+        
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 2000;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .mobile-menu-overlay.active { 
+            visibility: visible; 
+            opacity: 1; 
+        }
+        
+        .mobile-menu {
+            background: var(--background);
+            width: 70%;
+            max-width: 300px;
+            padding: 2rem;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mobile-menu-overlay.active .mobile-menu { 
+            transform: translateX(0); 
+        }
+        
+        .mobile-menu-close {
+            background: none; 
+            border: none; 
+            font-size: 1.8rem;
+            color: var(--dark); 
+            position: absolute; 
+            top: 1rem; 
+            right: 1rem; 
+            cursor: pointer;
+        }
+        
+        .mobile-menu a {
+            display: block; 
+            padding: 1rem 0; 
+            color: var(--dark); 
+            text-decoration: none;
+            font-size: 1.2rem; 
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1); 
+        }
+        
+        .mobile-auth-buttons { 
+            margin-top: auto; 
+            padding-top: 1.5rem; 
+        }
+        
+        .mobile-auth-btn {
+            background: var(--primary); 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 8px;
+            text-align: center; 
+            font-weight: 600; 
+            display: block; 
+            width: 100%; 
+            border: none; 
+            cursor: pointer;
+        }
+
+        /* Chat Interface Styles */
+        .main-content {
+            padding-top: var(--nav-height);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-wrapper {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            padding: 1rem 0;
+        }
+
+        .chat-window {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: var(--background);
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+        }
+
+        .message {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            max-width: 85%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message-bubble {
+            padding: 0.75rem 1.25rem;
+            border-radius: 18px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message.ai .message-bubble {
+            background-color: #e2e8f0;
+            color: var(--dark);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user .message-bubble {
+            background-color: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid #e0e0e0;
+            background-color: var(--background);
+            display: flex;
+            gap: 1rem;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+        }
+
+        .chat-input-area input {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            padding: 0.75rem 1.25rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: var(--primary);
+        }
+
+        .chat-input-area button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-input-area button:hover {
+            background-color: #217f74;
+        }
+
+        /* Loading indicator */
+        .loading-indicator { display: flex; align-items: center; gap: 0.5rem; }
+        .dot { width: 8px; height: 8px; background-color: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #FFB800;
+            color: #181818;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(-120%);
+            transition: transform 0.4s;
+            z-index: 3000;
+            display: none;
+        }
+        .notification-toast.show {
+            display: block;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <nav class="nav">
+            <a href="index.html" class="logo">Oxelion</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="about.html">About Me</a>
+                <a href="projects.html">Projects</a>
+                <a href="blog.html">Blogs</a>
+                <a href="resource.html">Resource</a>
+                <a href="ai-chat.html" class="active">AI Chat</a>
+            </div>
+            <button class="primary-button login-btn">Hi Coder</button>
+            <button class="mobile-menu-button" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <div class="mobile-menu">
+            <button class="mobile-menu-close" id="mobileMenuClose"><i class="fas fa-times"></i></button>
+            <a href="index.html">Home</a>
+            <a href="about.html">About Me</a>
+            <a href="projects.html">Projects</a>
+            <a href="blog.html">Blogs</a>
+            <a href="resource.html">Resource</a>
+            <a href="ai-chat.html" class="active">AI Chat</a>
+            <div class="mobile-auth-buttons">
+                <button class="mobile-auth-btn login-btn">Hi Coder</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div id="redirectNotification" class="notification-toast">
+        <i class="fas fa-exclamation-circle mr-2"></i>
+        <span>You're being redirected to the login page.</span>
+    </div>
+
+    <!-- Chat Interface -->
+    <main class="main-content">
+        <div class="chat-wrapper">
+            <div id="chat-window" class="chat-window">
+                <div class="flex message ai">
+                    <div class="message-bubble">
+                        Hello! I'm your AI assistant. How can I help you today?
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type your message...">
+                <button id="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyATnAziN-i_XuipwmNNL54Uo32Lp6gixIo",
+            authDomain: "personal-project-62960.firebaseapp.com",
+            projectId: "personal-project-62960",
+            storageBucket: "personal-project-62960.appspot.com",
+            messagingSenderId: "764447192852",
+            appId: "1:764447192852:web:185a024bcd9a1a504bf401",
+            measurementId: "G-NXDQT7BF8E"
+        };
+        
+        // --- IMPORTANT ---
+        // Replace "YOUR_API_KEY_HERE" with your actual Google AI API key.
+        // You can get a free key from Google AI Studio.
+        const apiKey = "YOUR_API_KEY_HERE";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // DOM Elements
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const loginBtns = document.querySelectorAll('.login-btn');
+        const notification = document.getElementById('redirectNotification');
+        const mobileMenuButton = document.getElementById('mobileMenuBtn');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+
+        let chatHistory = [];
+
+        // --- Authentication ---
+        onAuthStateChanged(auth, user => {
+            loginBtns.forEach(btn => {
+                if (user) {
+                    btn.textContent = 'Logout';
+                    btn.onclick = () => signOut(auth).catch(error => console.error('Sign out error', error));
+                } else {
+                    btn.textContent = 'Hi Coder';
+                    btn.onclick = () => window.location.href = './auth.html';
+                }
+            });
+
+            if (!user && !window.location.pathname.endsWith('auth.html')) {
+                notification.classList.add('show');
+                setTimeout(() => {
+                    window.location.href = './auth.html';
+                }, 3000);
+            }
+        });
+
+        // --- Mobile Menu ---
+        const toggleMenu = (show) => mobileMenuOverlay.classList.toggle('active', show);
+        mobileMenuButton.addEventListener('click', () => toggleMenu(true));
+        mobileMenuClose.addEventListener('click', () => toggleMenu(false));
+        mobileMenuOverlay.addEventListener('click', (e) => {
+            if (e.target === mobileMenuOverlay) toggleMenu(false);
+        });
+
+        // --- Chat Logic ---
+        const addMessage = (sender, text) => {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${sender}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = text;
+            
+            messageElement.appendChild(bubble);
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        };
+
+        const showLoadingIndicator = () => {
+            const loadingElement = document.createElement('div');
+            loadingElement.id = 'loading';
+            loadingElement.className = 'message ai';
+            loadingElement.innerHTML = `
+                <div class="message-bubble loading-indicator">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>`;
+            chatWindow.appendChild(loadingElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        };
+
+        const removeLoadingIndicator = () => {
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) loadingElement.remove();
+        };
+
+        const getAIResponse = async (prompt) => {
+            // Check if the API key is a placeholder
+            if (apiKey === "YOUR_API_KEY_HERE") {
+                addMessage('ai', "To enable the chat, please replace 'YOUR_API_KEY_HERE' in the HTML file with your actual Google AI API key.");
+                return;
+            }
+
+            showLoadingIndicator();
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            
+            const payload = { contents: chatHistory };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: { message: "An unknown API error occurred." } }));
+                    throw new Error(errorData.error.message || `API request failed with status ${response.status}`);
+                }
+
+                const result = await response.json();
+                removeLoadingIndicator();
+
+                if (result.error) {
+                     throw new Error(result.error.message);
+                }
+
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.length > 0) {
+                    const aiText = result.candidates[0].content.parts[0].text;
+                    addMessage('ai', aiText);
+                    chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                } else {
+                    addMessage('ai', 'Sorry, I received an empty response. Please try again.');
+                }
+            } catch (error) {
+                console.error("Error fetching AI response:", error);
+                removeLoadingIndicator();
+                addMessage('ai', `Sorry, something went wrong. Please check your API key and network connection.`);
+            }
+        };
+
+        const handleSend = () => {
+            const userInput = chatInput.value.trim();
+            if (userInput) {
+                addMessage('user', userInput);
+                getAIResponse(userInput);
+                chatInput.value = '';
+            }
+        };
+
+        sendBtn.addEventListener('click', handleSend);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+    </script>
+</body>
+</html>

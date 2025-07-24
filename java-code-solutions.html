@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Solutions - Bharath's Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap">
+    <style>
+        :root {
+            --primary: #2a9d8f;
+            --secondary: #264653;
+            --accent: #e9c46a;
+            --light: #f4f9f9;
+            --dark: #2b2d42;
+            --text: #333333;
+            --background: #ffffff;
+            --card-bg: #f8f9fa;
+            --code-bg: #1e1e1e;
+            --nav-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            overflow-x: hidden;
+        }
+
+        main {
+            padding-top: var(--nav-height);
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        body.loaded main,
+        body.loaded header,
+        body.loaded footer {
+            opacity: 1;
+        }
+
+        .loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a2a32;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loader {
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-wrapper.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        header {
+            background: var(--background);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            height: var(--nav-height);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 1.1rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a.active,
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a.active::after,
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .primary-button {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .primary-button:hover {
+            background-color: #217f74;
+            transform: translateY(-2px);
+        }
+
+        .mobile-menu-button { display: none; background: none; border: none; font-size: 1.5rem; color: var(--dark); cursor: pointer; }
+        .mobile-menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); display: flex; justify-content: flex-end;
+            visibility: hidden; opacity: 0; transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 2000;
+        }
+        .mobile-menu-overlay.active { visibility: visible; opacity: 1; }
+        .mobile-menu {
+            background: var(--background); width: 70%; max-width: 300px; padding: 2rem;
+            transform: translateX(100%); transition: transform 0.3s ease; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+            height: 100%; display: flex; flex-direction: column;
+        }
+        .mobile-menu-overlay.active .mobile-menu { transform: translateX(0); }
+        .mobile-menu-close {
+            background: none; border: none; font-size: 1.8rem; color: var(--dark);
+            position: absolute; top: 1rem; right: 1rem; cursor: pointer;
+        }
+        .mobile-menu a {
+            display: block; padding: 1rem 0; color: var(--dark); text-decoration: none;
+            font-size: 1.2rem; border-bottom: 1px solid rgba(0, 0, 0, 0.1); transition: color 0.2s;
+        }
+        .mobile-menu a:hover { color: var(--primary); }
+        .mobile-auth-buttons { margin-top: auto; padding-top: 1.5rem; }
+        .mobile-auth-btn {
+            background: var(--primary); color: white; padding: 12px 20px; border-radius: 8px;
+            text-align: center; font-weight: 600; display: block; width: 100%; border: none; cursor: pointer;
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--secondary);
+        }
+
+        .page-title h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title p {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .questions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .question-card {
+            background: var(--background);
+            border-radius: 15px;
+            border: 1px solid #e0e0e0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .question-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-header {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            transition: background 0.3s ease;
+        }
+
+        .question-header:hover {
+            background: #f1f3f5;
+        }
+
+        .question-header h3 {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .question-number {
+            background: var(--primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .question-card.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .solution-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            padding: 0 1.5rem;
+            background: var(--background);
+        }
+
+        .question-card.active .solution-container {
+            max-height: 1000px;
+            padding: 1.5rem;
+        }
+
+        .code-editor {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .editor-header {
+            background: #343a40;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-circles { display: flex; gap: 8px; }
+        .circle { width: 14px; height: 14px; border-radius: 50%; }
+        .circle-red { background: #ff5f56; }
+        .circle-yellow { background: #ffbd2e; }
+        .circle-green { background: #27c93f; }
+
+        .editor-title {
+            color: #ccc;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .code-display {
+            background: var(--code-bg);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            font-family: 'Fira Code', monospace, 'Courier New';
+            font-size: 0.95rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateY(calc(100% + 30px));
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+        }
+        
+        .site-footer {
+            background-color: var(--secondary); color: white; padding: 3rem 0; text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .footer-content {
+            max-width: 1400px; margin: 0 auto; padding: 0 5%;
+            display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+        }
+        .footer-socials { display: flex; gap: 1.5rem; }
+        .footer-socials a {
+            display: flex; align-items: center; justify-content: center; text-decoration: none;
+            width: 45px; height: 45px; background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%; color: white; font-size: 1.2rem; transition: all 0.3s ease;
+        }
+        .footer-socials a:hover { background-color: var(--primary); transform: translateY(-3px); }
+
+
+        @media (max-width: 768px) {
+            .nav-links, .login-btn { display: none; }
+            .mobile-menu-button { display: block; }
+            .question-header { padding: 1rem; }
+            .question-header h3 { font-size: 1rem; }
+            .code-display { padding: 1rem; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader-wrapper">
+        <div class="loader"></div>
+    </div>
+
+    <header>
+        <nav class="nav">
+            <a href="index.html" class="logo">Oxelion</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="about.html">About Me</a>
+                <a href="projects.html">Projects</a>
+                <a href="blog.html">Blogs</a>
+                <a href="resource.html">Resource</a>
+                <a href="code-solutions.html" class="active">Code Solutions</a>
+            </div>
+            <button class="primary-button login-btn" onclick="window.location.href='auth.html'">Hi Coder</button>
+            <button class="mobile-menu-button" id="mobileMenuBtn" aria-label="Open menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+    </header>
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <div class="mobile-menu">
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu"><i class="fas fa-times"></i></button>
+            <a href="index.html">Home</a>
+            <a href="about.html">About Me</a>
+            <a href="projects.html">Projects</a>
+            <a href="blog.html">Blogs</a>
+            <a href="resource.html">Resource</a>
+            <a href="code-solutions.html" class="active">Code Solutions</a>
+            <div class="mobile-auth-buttons">
+                <button class="mobile-auth-btn" onclick="window.location.href='auth.html'">Hi Coder</button>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <div class="main-container">
+            <div class="page-title">
+                <h1>Java Code Solutions</h1>
+                <p>Click on any question to view the solution</p>
+            </div>
+            
+            <div class="questions-container">
+                <div class="question-card" id="q1">
+                    <div class="question-header">
+                        <h3><span class="question-number">1</span> Reverse a String</h3>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="solution-container">
+                        <div class="code-editor">
+                            <div class="editor-header">
+                                <div class="editor-circles">
+                                    <span class="circle circle-red"></span>
+                                    <span class="circle circle-yellow"></span>
+                                    <span class="circle circle-green"></span>
+                                </div>
+                                <span class="editor-title">ReverseString.java</span>
+                                <button class="copy-btn">
+                                    <i class="far fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <pre class="code-display">
+public class ReverseString {
+    public static void main(String[] args) {
+        String input = "Hello, World!";
+        String reversed = reverseString(input);
+        System.out.println("Original: " + input);
+        System.out.println("Reversed: " + reversed);
+    }
+
+    public static String reverseString(String s) {
+        return new StringBuilder(s).reverse().toString();
+    }
+}
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question-card" id="q2">
+                    <div class="question-header">
+                        <h3><span class="question-number">2</span> Check Palindrome</h3>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="solution-container">
+                        <div class="code-editor">
+                            <div class="editor-header">
+                                <div class="editor-circles">
+                                    <span class="circle circle-red"></span>
+                                    <span class="circle circle-yellow"></span>
+                                    <span class="circle circle-green"></span>
+                                </div>
+                                <span class="editor-title">PalindromeCheck.java</span>
+                                <button class="copy-btn">
+                                    <i class="far fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <pre class="code-display">
+public class PalindromeCheck {
+    public static void main(String[] args) {
+        String testStr = "A man a plan a canal Panama";
+        boolean result = isPalindrome(testStr);
+        System.out.println("'" + testStr + "' is a palindrome: " + result);
+    }
+
+    public static boolean isPalindrome(String s) {
+        String clean = s.replaceAll("[^a-zA-Z]", "").toLowerCase();
+        int left = 0, right = clean.length() - 1;
+        while (left < right) {
+            if (clean.charAt(left++) != clean.charAt(right--)) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle"></i>
+        <span>Code copied to clipboard!</span>
+    </div>
+
+    <footer class="site-footer" id="contact">
+        <div class="footer-content">
+            <p>&copy; 2025 Bharath Kumar Gorle. All rights reserved.</p>
+            <div class="footer-socials">
+                <a href="https://github.com/online-in" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/bharath-kumar-gorle-78ba53333" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://x.com/bhara12549" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Loader ---
+            const loader = document.querySelector('.loader-wrapper');
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    document.body.classList.add('loaded');
+                }, 500);
+            });
+
+            // --- Mobile Menu ---
+            const mobileMenuButton = document.getElementById('mobileMenuBtn');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            const mobileMenuClose = document.getElementById('mobileMenuClose');
+            const toggleMenu = (show) => mobileMenuOverlay.classList.toggle('active', show);
+            if (mobileMenuButton) mobileMenuButton.addEventListener('click', () => toggleMenu(true));
+            if (mobileMenuClose) mobileMenuClose.addEventListener('click', () => toggleMenu(false));
+            if (mobileMenuOverlay) mobileMenuOverlay.addEventListener('click', (e) => {
+                if (e.target === mobileMenuOverlay) toggleMenu(false);
+            });
+            document.querySelectorAll('.mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => toggleMenu(false));
+            });
+
+            // --- Question Accordion ---
+            const questionCards = document.querySelectorAll('.question-card');
+            questionCards.forEach(card => {
+                const header = card.querySelector('.question-header');
+                header.addEventListener('click', () => {
+                    card.classList.toggle('active');
+                });
+            });
+            
+            // --- Notification Popup ---
+            function showNotification(message) {
+                const notification = document.getElementById('notification');
+                notification.querySelector('span').textContent = message;
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            // --- Copy Code ---
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const code = button.closest('.code-editor').querySelector('.code-display').innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        showNotification('Code copied to clipboard!');
+                    }).catch(err => {
+                        showNotification('Failed to copy code.');
+                        console.error('Failed to copy code:', err);
+                    });
+                });
+            });
+
+            // --- Animate elements on Scroll ---
+            const animatedElements = document.querySelectorAll('.question-card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedElements.forEach(el => observer.observe(el));
+            
+            // Expand the first question by default
+            const firstQuestion = document.getElementById('q1');
+            if(firstQuestion) {
+                firstQuestion.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

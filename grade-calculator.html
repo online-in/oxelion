@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Calculator - Oxelion</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <style>
+        /* ========== GLOBAL STYLES (from index.html) ========== */
+        :root {
+            --primary: #2a9d8f;
+            --secondary: #264653;
+            --accent: #e9c46a;
+            --light: #f4f9f9;
+            --dark: #2b2d42;
+            --text: #333333;
+            --background: #ffffff;
+            --card-bg: #f8f9fa;
+            --success: #4CAF50;
+            --error: #e63946;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --nav-height: 70px;
+            --code-bg: #1e1e1e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6; color: var(--text); background-color: var(--light); overflow-x: hidden;
+        }
+        main { padding-top: var(--nav-height); }
+        
+        /* ========== NAVIGATION & FOOTER (from index.html) ========== */
+        header { background: var(--background); border-bottom: 1px solid rgba(0, 0, 0, 0.1); padding: 0; position: fixed; width: 100%; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        nav { display: flex; align-items: center; justify-content: space-between; max-width: 1600px; margin: 0 auto; padding: 0 2rem; height: var(--nav-height); }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary); letter-spacing: 0.5px; text-decoration: none; transition: color 0.3s ease; }
+        .logo:hover { color: var(--secondary); }
+        .nav-links { display: flex; gap: 1.5rem; flex: 1; justify-content: center; }
+        .nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; font-size: 1.1rem; padding: 0.5rem 0.75rem; border-radius: 6px; transition: all 0.3s ease; position: relative; }
+        .nav-links a::after { content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); width: 0; height: 2px; background: var(--primary); transition: width 0.3s ease; }
+        .nav-links a.active, .nav-links a:hover { color: var(--primary); }
+        .nav-links a.active::after, .nav-links a:hover::after { width: 100%; }
+        .primary-button { background-color: var(--primary); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(42, 157, 143, 0.3); text-decoration: none; display: inline-block; }
+        .primary-button:hover { background-color: #217f74; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(42, 157, 143, 0.4); }
+        .primary-button.logout { background-color: var(--accent); color: var(--secondary); }
+        .mobile-menu-button { display: none; background: none; border: none; font-size: 1.5rem; color: var(--dark); cursor: pointer; }
+        .mobile-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: flex-end; visibility: hidden; opacity: 0; transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 2000; }
+        .mobile-menu-overlay.active { visibility: visible; opacity: 1; }
+        .mobile-menu { background: var(--background); width: 70%; max-width: 300px; padding: 2rem; transform: translateX(100%); transition: transform 0.3s ease; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); height: 100%; display: flex; flex-direction: column; }
+        .mobile-menu-overlay.active .mobile-menu { transform: translateX(0); }
+        .mobile-menu-close { background: none; border: none; font-size: 1.8rem; color: var(--dark); position: absolute; top: 1rem; right: 1rem; cursor: pointer; }
+        .mobile-menu a { display: block; padding: 1rem 0; color: var(--dark); text-decoration: none; font-size: 1.2rem; border-bottom: 1px solid rgba(0, 0, 0, 0.1); transition: color 0.2s; }
+        .mobile-menu a:hover { color: var(--primary); }
+        .mobile-auth-buttons { margin-top: auto; padding-top: 1.5rem; }
+        .mobile-auth-btn { background: var(--primary); color: white; padding: 12px 20px; border-radius: 8px; text-align: center; font-weight: 600; display: block; width: 100%; border: none; cursor: pointer; }
+        .mobile-auth-btn.logout { background-color: var(--accent); color: var(--secondary); }
+        .site-footer { background-color: var(--secondary); color: white; padding: 3rem 0; text-align: center; }
+        .footer-content { max-width: 1400px; margin: 0 auto; padding: 0 5%; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+        .footer-socials { display: flex; gap: 1.5rem; }
+        .footer-socials a { display: flex; align-items: center; justify-content: center; text-decoration: none; width: 45px; height: 45px; background-color: rgba(255, 255, 255, 0.1); border-radius: 50%; color: white; font-size: 1.2rem; transition: all 0.3s ease; }
+        .footer-socials a:hover { background-color: var(--primary); transform: translateY(-3px); }
+        
+        /* Notification Toast - UPDATED ANIMATION */
+        #redirectNotification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px; /* Position to the left */
+            transform: translateX(-120%); /* Hide off-screen to the left */
+            background: #FFB800;
+            color: #181818;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.4s ease-in-out;
+            z-index: 3000;
+        }
+        #redirectNotification.show {
+            transform: translateX(0); /* Slide in to its final position */
+        }
+
+        /* ========== PAGE-SPECIFIC STYLES ========== */
+        .page-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .calculator-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .calculator-header {
+            background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .calculator-header h2 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .calculator-header p { opacity: 0.9; }
+        .calculator-content { padding: 2rem; display: flex; flex-direction: column; gap: 2rem; }
+        .calculator-form { display: flex; flex-direction: column; gap: 1.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-group label { font-weight: 600; color: var(--secondary); display: flex; align-items: center; gap: 0.5rem; }
+        
+        input[type="text"], input[type="number"] {
+            padding: 0.8rem 1rem; border: 2px solid #e0e0e0;
+            border-radius: 8px; font-size: 1rem; transition: all 0.3s ease;
+        }
+        input:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.2);
+        }
+
+        .grades-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        .grade-input {
+             width: 100%; padding: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px;
+            text-align: center; font-weight: 600; font-size: 1rem; transition: all 0.3s ease;
+        }
+        .grade-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.2);
+        }
+
+        .calculate-button {
+            width: auto; padding: 0.8rem 1.5rem; border-radius: 8px;
+            border: none; background: var(--primary); color: white;
+            font-size: 1.1rem; font-weight: 600; cursor: pointer;
+            gap: 10px; transition: all 0.3s ease; display: flex;
+            align-items: center; justify-content: center;
+            align-self: flex-start;
+        }
+        .calculate-button:hover {
+            background: var(--secondary); transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(38, 70, 83, 0.3);
+        }
+        
+        .result-container {
+            margin-top: 1.5rem; padding: 2rem; background: var(--light);
+            border-radius: 10px; display: none; border-left: 5px solid var(--primary);
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .result-container.show { display: block; }
+        .result-container h3 { margin-bottom: 1.5rem; color: var(--secondary); display: flex; align-items: center; gap: 10px; font-size: 1.5rem; }
+        .result-container p { margin: 1rem 0; font-size: 1.1rem; }
+        .result-container span { font-weight: 600; color: var(--primary); }
+        .gpa-value { font-size: 2.5rem; color: var(--secondary); font-weight: 700; }
+
+        .grade-key {
+            margin-top: 1.5rem; background: var(--background); border: 1px solid #e0e0e0;
+            border-radius: 10px; padding: 1.5rem;
+        }
+        .grade-key h4 { margin-bottom: 1rem; color: var(--dark); font-size: 1.2rem; display:flex; align-items:center; gap: 0.5rem; }
+        .grade-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.8rem; }
+        .grade-item { display: flex; align-items: center; gap: 8px; background: var(--light); padding: 0.5rem; border-radius: 6px; border-left: 3px solid; transition: transform 0.3s ease; }
+        .grade-item:hover { transform: scale(1.05); }
+        .grade-O { border-color: #ff9a9e; } .grade-Aplus { border-color: #a1c4fd; } .grade-A { border-color: #d4fc79; }
+        .grade-Bplus { border-color: #84fab0; } .grade-B { border-color: #a6c0fe; } .grade-C { border-color: #fccb90; }
+        .grade-D { border-color: #f6d365; } .grade-F { border-color: #ff0844; }
+
+        /* ========== RESPONSIVE DESIGN ========== */
+        @media (max-width: 768px) {
+            .nav-links, .login-btn { display: none; }
+            .mobile-menu-button { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="nav">
+            <a href="index.html" class="logo">Oxelion</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="about.html">About Me</a>
+                <a href="projects.html">Projects</a>
+                <a href="blog.html">Blogs</a>
+                <a href="resource.html">Resource</a>
+                <a href="ai-chat.html">Ai Chat</a>            
+            </div>
+            <button class="primary-button login-btn">Hi Coder</button>
+            <button class="mobile-menu-button" id="mobileMenuBtn" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+        </nav>
+    </header>
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <div class="mobile-menu">
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu"><i class="fas fa-times"></i></button>
+            <a href="index.html">Home</a>
+            <a href="about.html">About Me</a>
+            <a href="projects.html">Projects</a>
+            <a href="blog.html">Blogs</a>
+            <a href="resource.html">Resource</a>
+            <a href="ai-chat.html">Ai Chat</a>            
+            <div class="mobile-auth-buttons">
+                <button class="mobile-auth-btn">Hi Coder</button>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <div class="page-container">
+            <div class="calculator-container">
+                <div class="calculator-header">
+                    <h2>Grade Calculator</h2>
+                    <p>Calculate your GPA based on your subject grades</p>
+                </div>
+                
+                <div class="calculator-content">
+                    <form id="gradeCalculatorForm" class="calculator-form">
+                        <div class="form-group">
+                            <label for="studentName"><i class="fas fa-user"></i> Your Name:</label>
+                            <input type="text" id="studentName" placeholder="E.g., John Doe" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="numGrades"><i class="fas fa-list-ol"></i> Number of Subjects:</label>
+                            <input type="number" id="numGrades" min="1" max="20" placeholder="E.g., 5" required>
+                        </div>
+        
+                        <div class="form-group">
+                            <label><i class="fas fa-graduation-cap"></i> Enter Grades:</label>
+                            <div id="gradesContainer" class="grades-container">
+                                </div>
+                        </div>
+        
+                        <button type="submit" class="calculate-button">
+                            <i class="fas fa-calculator"></i> Calculate GPA
+                        </button>
+                    </form>
+        
+                    <div id="resultContainer" class="result-container">
+                        <h3><i class="fas fa-chart-line"></i> Your Results:</h3>
+                        <p>Name: <span id="resultName"></span></p>
+                        <p>Total Points: <span id="resultTotal"></span></p>
+                        <p>Your GPA is: <span class="gpa-value" id="resultGPA"></span></p>
+                    </div>
+                    
+                    <div class="grade-key">
+                        <h4><i class="fas fa-key"></i> Grade Point Key:</h4>
+                        <div class="grade-grid">
+                            <div class="grade-item grade-O">O = 10</div>
+                            <div class="grade-item grade-Aplus">A+ = 9</div>
+                            <div class="grade-item grade-A">A = 8</div>
+                            <div class="grade-item grade-Bplus">B+ = 7</div>
+                            <div class="grade-item grade-B">B = 6</div>
+                            <div class="grade-item grade-C">C = 5</div>
+                            <div class="grade-item grade-D">D = 4</div>
+                            <div class="grade-item grade-F">F = 0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="redirectNotification">You're being redirected to the login page...</div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Bharath Kumar Gorle. All rights reserved.</p>
+            <div class="footer-socials">
+                <a href="https://github.com/online-in" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/bharath-kumar-gorle-78ba53333" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://x.com/bhara12549" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyATnAziN-i_XuipwmNNL54Uo32Lp6gixIo",
+            authDomain: "personal-project-62960.firebaseapp.com",
+            projectId: "personal-project-62960",
+            storageBucket: "personal-project-62960.appspot.com",
+            messagingSenderId: "764447192852",
+            appId: "1:764447192852:web:185a024bcd9a1a504bf401",
+            measurementId: "G-NXDQT7BF8E"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Mobile Menu ---
+            const mobileMenuButton = document.getElementById('mobileMenuBtn');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            const mobileMenuClose = document.getElementById('mobileMenuClose');
+            const toggleMenu = (show) => mobileMenuOverlay.classList.toggle('active', show);
+            mobileMenuButton.addEventListener('click', () => toggleMenu(true));
+            mobileMenuClose.addEventListener('click', () => toggleMenu(false));
+            mobileMenuOverlay.addEventListener('click', (e) => {
+                if (e.target === mobileMenuOverlay) toggleMenu(false);
+            });
+
+            // --- Animate on Scroll ---
+            const animatedElements = document.querySelectorAll('.calculator-container');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedElements.forEach(el => observer.observe(el));
+
+            // --- Authentication Logic ---
+            const loginBtn = document.querySelector('.login-btn');
+            const mobileLoginBtn = document.querySelector('.mobile-auth-btn');
+            const redirectNotification = document.getElementById('redirectNotification');
+
+            function showRedirectNotification() {
+                redirectNotification.classList.add('show');
+                setTimeout(() => {
+                    window.location.href = 'auth.html';
+                }, 2500);
+            }
+            
+            function updateAuthUI(user) {
+                if (user) {
+                    // User is logged in
+                    loginBtn.textContent = 'Logout';
+                    mobileLoginBtn.textContent = 'Logout';
+                    loginBtn.classList.add('logout');
+                    mobileLoginBtn.classList.add('logout');
+                    const signOutAction = () => {
+                        auth.signOut().then(() => console.log('User signed out.'));
+                    };
+                    loginBtn.onclick = signOutAction;
+                    mobileLoginBtn.onclick = signOutAction;
+                } else {
+                    // User is not logged in
+                    loginBtn.textContent = 'Hi Coder';
+                    mobileLoginBtn.textContent = 'Hi Coder';
+                    loginBtn.classList.remove('logout');
+                    mobileLoginBtn.classList.remove('logout');
+                    const signInAction = () => {
+                        window.location.href = 'auth.html';
+                    };
+                    loginBtn.onclick = signInAction;
+                    mobileLoginBtn.onclick = signInAction;
+                    // Show redirect notification as user is not logged in
+                    showRedirectNotification();
+                }
+            }
+
+            auth.onAuthStateChanged(updateAuthUI);
+
+            // --- Page-Specific Logic ---
+            const numGradesInput = document.getElementById('numGrades');
+            const gradesContainer = document.getElementById('gradesContainer');
+            numGradesInput.addEventListener('input', function() {
+                const numGrades = parseInt(numGradesInput.value) || 0;
+                gradesContainer.innerHTML = '';
+                for (let i = 0; i < numGrades; i++) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'grade-input';
+                    input.placeholder = `Sub ${i + 1}`;
+                    input.setAttribute('aria-label', `Grade for subject ${i + 1}`);
+                    input.required = true;
+                    gradesContainer.appendChild(input);
+                }
+            });
+            
+            const form = document.getElementById('gradeCalculatorForm');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('studentName').value;
+                const gradeInputs = document.querySelectorAll('.grade-input');
+                const grades = Array.from(gradeInputs).map(input => input.value.trim().toUpperCase());
+                
+                const gradePoints = { 'O': 10, 'A+': 9, 'A': 8, 'B+': 7, 'B': 6, 'C': 5, 'D': 4, 'F': 0 };
+                let totalPoints = 0;
+                let valid = true;
+                
+                if (grades.length === 0) {
+                    alert("Please enter the number of subjects and their grades.");
+                    return;
+                }
+
+                for (const grade of grades) {
+                    if (!gradePoints.hasOwnProperty(grade)) {
+                        alert(`Invalid grade: "${grade}". Please use only O, A+, A, B+, B, C, D, or F.`);
+                        valid = false;
+                        break;
+                    }
+                    totalPoints += gradePoints[grade];
+                }
+                
+                if (valid) {
+                    const gpa = totalPoints / grades.length;
+                    
+                    document.getElementById('resultName').textContent = name;
+                    document.getElementById('resultTotal').textContent = totalPoints.toFixed(2);
+                    document.getElementById('resultGPA').textContent = gpa.toFixed(2);
+                    
+                    const resultContainer = document.getElementById('resultContainer');
+                    resultContainer.classList.add('show');
+                    resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

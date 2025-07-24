@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Resources - Oxelion</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <style>
+        :root {
+            --primary: #2a9d8f;
+            --secondary: #264653;
+            --accent: #e9c46a;
+            --light: #f4f9f9;
+            --dark: #2b2d42;
+            --text: #333333;
+            --background: #ffffff;
+            --card-bg: #f8f9fa;
+            --nav-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--light);
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header {
+            background: var(--background);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            height: var(--nav-height);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .logo:hover {
+            color: var(--secondary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 1.1rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a.active,
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a.active::after,
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .primary-button {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(42, 157, 143, 0.3);
+            margin-left: 1rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .primary-button:hover {
+            background-color: #217f74;
+            transform: translateY(-2px);
+        }
+
+        .mobile-menu-button {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark);
+            cursor: pointer;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: flex-end;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 2000;
+        }
+
+        .mobile-menu-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .mobile-menu {
+            background: var(--background);
+            width: 70%;
+            max-width: 300px;
+            padding: 2rem;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .mobile-menu-overlay.active .mobile-menu {
+            transform: translateX(0);
+        }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: var(--dark);
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            cursor: pointer;
+        }
+
+        .mobile-menu a {
+            display: block;
+            padding: 1rem 0;
+            color: var(--dark);
+            text-decoration: none;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            transition: color 0.2s;
+        }
+
+        .mobile-menu a:hover {
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding-top: calc(var(--nav-height) + 40px);
+            padding-bottom: 60px;
+        }
+
+        .search-section {
+            background: var(--secondary);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .search-section h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-bar {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            border: none;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        .search-bar button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background-color 0.3s;
+        }
+
+        .search-bar button:hover {
+            background-color: #217f74;
+        }
+
+        .resources-section {
+            padding: 4rem 2rem;
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .resource-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .card-description {
+            margin-bottom: 1.5rem;
+            color: #555;
+        }
+        
+        .resource-link {
+            display: block;
+            margin-bottom: 0.8rem;
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .resource-link:hover {
+            color: var(--primary);
+        }
+
+        .resource-link i {
+            margin-right: 0.5rem;
+            color: var(--primary);
+        }
+
+        /* Language/Tool Specific Colors */
+        .python .card-header { background-color: #3776ab; }
+        .java .card-header { background-color: #5382a1; }
+        .javascript .card-header { background-color: #f7df1e; color: var(--dark) }
+        .sql .card-header { background-color: #336791; }
+        .mongodb .card-header { background-color: #4DB33D; }
+        .c .card-header { background-color: #004482; }
+
+        /* Footer */
+        .site-footer {
+            background-color: var(--secondary);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-socials a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            width: 45px;
+            height: 45px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-socials a:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #FFB800;
+            color: #181818;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(-120%);
+            transition: transform 0.4s;
+            z-index: 1000;
+        }
+        
+        .notification-toast.show {
+            transform: translateX(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links, .login-btn {
+                display: none;
+            }
+            
+            .mobile-menu-button {
+                display: block;
+            }
+
+            .search-section h1 {
+                font-size: 2rem;
+            }
+
+            .resources-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="nav">
+            <a href="index.html" class="logo">Oxelion</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="about.html">About Me</a>
+                <a href="projects.html">Projects</a>
+                <a href="blog.html">Blogs</a>
+                <a href="resource.html" class="active">Resource</a>
+                <a href="ai-chat.html">Ai Chat</a>            
+            </div>
+            <button class="primary-button login-btn">Hi Coder</button>
+            <button class="mobile-menu-button" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+        
+        <div class="mobile-menu-overlay">
+            <div class="mobile-menu">
+                <button class="mobile-menu-close">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="mobile-menu-links">
+                    <a href="index.html">Home</a>
+                    <a href="about.html">About Me</a>
+                    <a href="projects.html">Projects</a>
+                    <a href="blog.html">Blogs</a>
+                    <a href="resource.html" class="active">Resource</a>
+                    <a href="ai-chat.html">Ai Chat</a>            
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="notification-toast" id="redirectNotification">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>You're being redirected to login page</span>
+    </div>
+
+    <main class="main-content">
+        <section class="search-section">
+            <div class="container">
+                <h1>Developer Resources</h1>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search for languages, tools, etc.">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <section class="resources-section">
+            <div class="container">
+                <div class="resources-grid">
+                    
+                    <div class="resource-card python">
+                        <div class="card-header">
+                            <i class="fab fa-python card-icon"></i>
+                            <h3 class="card-title">Python</h3>
+                        </div>
+                        <div class="card-content">
+                            <p class="card-description">A versatile, high-level language known for its simplicity and readability.</p>
+                            <a href="https://docs.python.org" class="resource-link"><i class="fas fa-book"></i>Official Documentation</a>
+                            <a href="https://realpython.com" class="resource-link"><i class="fas fa-graduation-cap"></i>Real Python Tutorials</a>
+                            <a href="https://www.jetbrains.com/pycharm/" class="resource-link"><i class="fas fa-laptop-code"></i>PyCharm IDE</a>
+                        </div>
+                    </div>
+
+                    <div class="resource-card java">
+                        <div class="card-header">
+                            <i class="fab fa-java card-icon"></i>
+                            <h3 class="card-title">Java</h3>
+                        </div>
+                        <div class="card-content">
+                            <p class="card-description">A robust, object-oriented language for portability and performance.</p>
+                            <a href="https://docs.oracle.com/javase/" class="resource-link"><i class="fas fa-book"></i>Oracle Java Docs</a>
+                            <a href="https://www.baeldung.com/" class="resource-link"><i class="fas fa-graduation-cap"></i>Baeldung Tutorials</a>
+                            <a href="https://www.jetbrains.com/idea/" class="resource-link"><i class="fas fa-laptop-code"></i>IntelliJ IDEA</a>
+                        </div>
+                    </div>
+                    
+                    <div class="resource-card javascript">
+                        <div class="card-header">
+                            <i class="fab fa-js-square card-icon"></i>
+                            <h3 class="card-title">JavaScript</h3>
+                        </div>
+                        <div class="card-content">
+                            <p class="card-description">The language of the web, for interactive and dynamic experiences.</p>
+                            <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" class="resource-link"><i class="fas fa-book"></i>MDN Web Docs</a>
+                            <a href="https://javascript.info" class="resource-link"><i class="fas fa-graduation-cap"></i>The Modern JavaScript Tutorial</a>
+                            <a href="https://code.visualstudio.com" class="resource-link"><i class="fas fa-laptop-code"></i>VS Code Editor</a>
+                        </div>
+                    </div>
+
+                    <div class="resource-card sql">
+                        <div class="card-header">
+                            <i class="fas fa-database card-icon"></i>
+                            <h3 class="card-title">SQL</h3>
+                        </div>
+                        <div class="card-content">
+                            <p class="card-description">The standard language for relational database management.</p>
+                            <a href="https://sqlzoo.net" class="resource-link"><i class="fas fa-graduation-cap"></i>SQLZoo Interactive Tutorial</a>
+                            <a href="https://www.w3schools.com/sql/" class="resource-link"><i class="fas fa-book"></i>W3Schools SQL Reference</a>
+                            <a href="https://www.mysql.com/products/workbench/" class="resource-link"><i class="fas fa-tools"></i>MySQL Workbench</a>
+                        </div>
+                    </div>
+
+                    <div class="resource-card mongodb">
+                        <div class="card-header">
+                            <i class="fas fa-leaf card-icon"></i>
+                            <h3 class="card-title">MongoDB</h3>
+                        </div>
+                        <div class="card-content">
+                            <p class="card-description">A popular NoSQL database with flexible, document-oriented storage.</p>
+                            <a href="https://university.mongodb.com" class="resource-link"><i class="fas fa-graduation-cap"></i>MongoDB University</a>
+                            <a href="https://docs.mongodb.com" class="resource-link"><i class="fas fa-book"></i>Official Documentation</a>
+                            <a href="https://www.mongodb.com/products/compass" class="resource-link"><i class="fas fa-compass"></i>MongoDB Compass</a>
+                        </div>
+                    </div>
+
+                    <div class="resource-card c">
+                        <div class="card-header">
+                            <i class="fas fa-microchip card-icon"></i>
+                            <h3 class="card-title">C Language</h3>
+                        </div>
+                        <div class="card-content">
+                            <p class="card-description">A foundational language for system programming and performance.</p>
+                            <a href="https://www.learn-c.org" class="resource-link"><i class="fas fa-graduation-cap"></i>Learn-C.org Interactive Tutorial</a>
+                            <a href="https://en.cppreference.com/w/c" class="resource-link"><i class="fas fa-book"></i>C Standard Library Reference</a>
+                            <a href="https://gcc.gnu.org" class="resource-link"><i class="fas fa-laptop-code"></i>GCC Compiler</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="site-footer" id="contact">
+        <div class="footer-content">
+            <p>&copy; 2024 Oxelion. All rights reserved.</p>
+            <div class="footer-socials">
+                <a href="https://github.com/online-in" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/bharath-kumar-gorle-78ba53333" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://x.com/bhara12549" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyATnAziN-i_XuipwmNNL54Uo32Lp6gixIo",
+            authDomain: "personal-project-62960.firebaseapp.com",
+            projectId: "personal-project-62960",
+            storageBucket: "personal-project-62960.appspot.com",
+            messagingSenderId: "764447192852",
+            appId: "1:764447192852:web:185a024bcd9a1a504bf401",
+            measurementId: "G-NXDQT7BF8E"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        
+        function showRedirectNotification() {
+            const notification = document.getElementById('redirectNotification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                window.location.href = 'auth.html';
+            }, 3000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            auth.onAuthStateChanged(function(user) {
+                if (!user) {
+                    showRedirectNotification();
+                }
+            });
+            
+            const mobileMenuButton = document.getElementById('mobileMenuBtn');
+            const mobileMenuOverlay = document.querySelector('.mobile-menu-overlay');
+            const mobileMenuClose = document.querySelector('.mobile-menu-close');
+            
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', () => mobileMenuOverlay.classList.add('active'));
+            }
+            
+            if (mobileMenuClose) {
+                mobileMenuClose.addEventListener('click', () => mobileMenuOverlay.classList.remove('active'));
+            }
+            
+            mobileMenuOverlay.addEventListener('click', (e) => {
+                if (e.target === mobileMenuOverlay) {
+                    mobileMenuOverlay.classList.remove('active');
+                }
+            });
+
+            const loginBtn = document.querySelector('.login-btn');
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    loginBtn.textContent = 'Logout';
+                    loginBtn.onclick = () => auth.signOut();
+                } else {
+                    loginBtn.textContent = 'Hi Coder';
+                    loginBtn.onclick = () => window.location.href = 'auth.html';
+                }
+            });
+
+            auth.onSignOut = () => {
+                window.location.href = 'index.html';
+            };
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Bharath</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <style>
+        /* Modern Color Theme */
+        :root {
+            --primary: #2a9d8f; /* Teal */
+            --secondary: #264653; /* Dark blue */
+            --accent: #e9c46a; /* Gold */
+            --light: #f4f9f9;
+            --dark: #2b2d42;
+            --text: #333333;
+            --background: #ffffff;
+            --card-bg: #f8f9fa;
+            --success: #4CAF50;
+            --timeline-color: #e0e0e0;
+            --nav-height: 70px;
+            --code-bg: #1e1e1e;
+        }
+
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            overflow-x: hidden;
+        }
+
+        header {
+            background: var(--background);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            height: var(--nav-height);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .logo:hover {
+            color: var(--secondary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 1.1rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a.active,
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a.active::after,
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .primary-button {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(42, 157, 143, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .primary-button:hover {
+            background-color: #217f74;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(42, 157, 143, 0.4);
+        }
+        
+        .login-btn.logout {
+            background-color: var(--accent);
+            color: var(--secondary);
+        }
+        
+        .login-btn.logout:hover {
+            background-color: #e0b04d;
+        }
+
+        .accent-button {
+            background-color: var(--accent);
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .accent-button:hover {
+            background-color: #e0b04d;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-button { 
+            display: none; 
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark);
+            cursor: pointer;
+        }
+        
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: flex-end;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 2000;
+        }
+        
+        .mobile-menu-overlay.active { 
+            visibility: visible; 
+            opacity: 1; 
+        }
+        
+        .mobile-menu {
+            background: var(--background);
+            width: 70%;
+            max-width: 300px;
+            padding: 2rem;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mobile-menu-overlay.active .mobile-menu { 
+            transform: translateX(0); 
+        }
+        
+        .mobile-menu-close {
+            background: none; 
+            border: none; 
+            font-size: 1.8rem;
+            color: var(--dark); 
+            position: absolute; 
+            top: 1rem; 
+            right: 1rem; 
+            cursor: pointer;
+        }
+        
+        .mobile-menu a {
+            display: block; 
+            padding: 1rem 0; 
+            color: var(--dark); 
+            text-decoration: none;
+            font-size: 1.2rem; 
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1); 
+            transition: color 0.2s;
+        }
+        
+        .mobile-menu a:hover { 
+            color: var(--primary); 
+        }
+        
+        .mobile-auth-buttons { 
+            margin-top: auto; 
+            padding-top: 1.5rem; 
+        }
+        
+        .mobile-auth-btn {
+            background: var(--primary); 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 8px;
+            text-align: center; 
+            font-weight: 600; 
+            display: block; 
+            width: 100%; 
+            border: none; 
+            cursor: pointer;
+        }
+        
+        .mobile-auth-btn.logout { 
+            background-color: var(--accent); 
+            color: var(--secondary); 
+        }
+
+        /* Projects Hero Section */
+        #projects-hero {
+            background: linear-gradient(135deg, #1a2a32 0%, #264653 100%);
+            color: white;
+            padding: calc(var(--nav-height) + 4rem) 5% 4rem;
+            text-align: center;
+        }
+        
+        .projects-hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .projects-hero-title {
+            font-size: clamp(2.5rem, 7vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        .projects-hero-subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .projects-hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            margin-top: 3rem;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Projects Section */
+        #projects {
+            padding: 5rem 5%;
+            background: var(--light);
+        }
+        
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            font-weight: 800;
+            color: var(--secondary);
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            animation: slideInUp 1s ease-out;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--primary);
+            margin: 0.5rem auto 0;
+            border-radius: 2px;
+        }
+        
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+        
+        .project-card {
+            background: var(--background);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.5s ease;
+        }
+        
+        .project-card.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .project-image {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+        }
+        
+        .project-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .project-card:hover .project-image img {
+            transform: scale(1.05);
+        }
+        
+        .badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 0.35rem 1rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 10;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .badge-featured {
+            background: var(--accent);
+            color: var(--dark);
+        }
+        
+        .badge-clone {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .badge-basic {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .badge-fullstack {
+            background: linear-gradient(45deg, #e9c46a, #2a9d8f);
+            color: var(--dark);
+        }
+        
+        .badge-api {
+            background: linear-gradient(45deg, #264653, #e76f51);
+            color: white;
+        }
+        
+        .project-info {
+            padding: 1.8rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .project-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--secondary);
+            animation: slideInRight 0.4s ease;
+        }
+        
+        .project-duration {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 1rem;
+            animation: slideInRight 0.6s ease;
+        }
+        
+        .project-desc {
+            color: #555;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+            animation: slideInRight 0.8s ease;
+        }
+        
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 1s ease;
+        }
+        
+        .project-tags span {
+            padding: 0.4rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.2s;
+        }
+        
+        .project-tags span:hover {
+            transform: translateY(-3px);
+        }
+        
+        .tag-html {
+            background: rgba(227, 76, 38, 0.1);
+            color: #e34c26;
+        }
+        
+        .tag-css {
+            background: rgba(38, 77, 228, 0.1);
+            color: #264de4;
+        }
+        
+        .tag-js {
+            background: rgba(240, 219, 79, 0.1);
+            color: #d6bb0d;
+        }
+        
+        .tag-react {
+            background: rgba(97, 219, 251, 0.1);
+            color: #61dafb;
+        }
+        
+        .tag-node {
+            background: rgba(139, 195, 74, 0.1);
+            color: #8bc34a;
+        }
+        
+        .tag-mongo {
+            background: rgba(77, 182, 92, 0.1);
+            color: #4db65c;
+        }
+        
+        .project-links {
+            margin-top: auto;
+            animation: fadeIn 1.2s ease;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .project-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .project-link.demo {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .project-link.code {
+            background: rgba(42, 157, 143, 0.1);
+            color: var(--primary);
+        }
+        
+        .project-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Project Categories */
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+        
+        .category-btn {
+            padding: 0.7rem 1.5rem;
+            background: rgba(42, 157, 143, 0.1);
+            color: var(--primary);
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .category-btn.active, .category-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Footer */
+        .site-footer {
+            background-color: var(--secondary);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-socials a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            width: 45px;
+            height: 45px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-socials a:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #FFB800;
+            color: #181818;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(-120%);
+            transition: transform 0.4s;
+            z-index: 1000;
+        }
+        
+        .notification-toast.show {
+            transform: translateX(0);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .projects-grid {
+                grid-template-columns: 1fr;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .nav-links, .login-btn { 
+                display: none; 
+            }
+            .mobile-menu-button { 
+                display: block; 
+            }
+            
+            .projects-hero-stats {
+                gap: 1.5rem;
+            }
+            
+            .stat-item {
+                min-width: 150px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .project-info {
+                padding: 1.5rem;
+            }
+            
+            .project-links {
+                flex-direction: column;
+            }
+            
+            .categories {
+                gap: 0.5rem;
+            }
+            
+            .category-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="nav">
+            <a href="index.html" class="logo">Oxelion</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="about.html">About Me</a>
+                <a href="projects.html" class="active">Projects</a>
+                <a href="blog.html">Blogs</a>
+                <a href="resource.html">Resource</a>
+                <a href="ai-chat.html">Ai Chat</a>            
+            </div>
+            <button class="primary-button login-btn" onclick="window.location.href='auth.html'">Hi Coder</button>
+            <button class="mobile-menu-button" id="mobileMenuBtn" aria-label="Open menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+    </header>
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <div class="mobile-menu">
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu"><i class="fas fa-times"></i></button>
+            <a href="index.html">Home</a>
+            <a href="about.html">About Me</a>
+            <a href="projects.html" class="active">Projects</a>
+            <a href="blog.html">Blogs</a>
+            <a href="resource.html">Resource</a>
+            <a href="ai-chat.html">Ai Chat</a>            
+            <div class="mobile-auth-buttons">
+                <button class="mobile-auth-btn" onclick="window.location.href='auth.html'">Hi Coder</button>
+            </div>
+        </div>
+    </div>
+    
+    <section id="projects-hero">
+        <div class="projects-hero-container">
+            <h1 class="projects-hero-title">My Development Projects</h1>
+            <p class="projects-hero-subtitle">Explore a collection of my innovative web projects showcasing modern design and functionality</p>
+            
+            <div class="projects-hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">18+</div>
+                    <div class="stat-label">Projects Completed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Featured Projects</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">12K+</div>
+                    <div class="stat-label">Lines of Code</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="projects">
+        <div class="section-container">
+            <h2 class="section-title">Featured Projects</h2>
+            
+            <div class="categories">
+                <button class="category-btn active">All Projects</button>
+                <button class="category-btn">Frontend</button>
+                <button class="category-btn">Full Stack</button>
+                <button class="category-btn">Design</button>
+                <button class="category-btn">Clones</button>
+            </div>
+            
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-image">
+                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Personal Portfolio Website">
+                        <span class="badge badge-featured"><i class="fas fa-star"></i> Featured</span>
+                    </div>
+                    <div class="project-info">
+                        <h3>Personal Portfolio Website</h3>
+                        <p class="project-duration"><i class="fas fa-calendar-alt"></i> 27 Dec, 2024 - 17 Jun, 2025</p>
+                        <p class="project-desc">I am a dedicated and innovative frontend developer with a strong foundation in HTML, CSS and JavaScript. I specialize in creating responsive, user-friendly interfaces and have a passion for solving complex problems through clean, efficient code.</p>
+                        <div class="project-tags">
+                            <span class="tag-html"><i class="fab fa-html5"></i> HTML</span>
+                            <span class="tag-css"><i class="fab fa-css3-alt"></i> CSS</span>
+                            <span class="tag-js"><i class="fab fa-js"></i> JavaScript</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://the-king-25.github.io/Educoders/" target="_blank" class="project-link demo"><i class="fas fa-external-link-alt"></i> Live Demo</a>
+                            <a href="https://github.com/the-king-25/Educoders" target="_blank" class="project-link code"><i class="fab fa-github"></i> Source Code</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-image">
+                        <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80" alt="YouTube Clone">
+                        <span class="badge badge-clone"><i class="fas fa-clone"></i> Clone</span>
+                    </div>
+                    <div class="project-info">
+                        <h3>YouTube Clone</h3>
+                        <p class="project-duration"><i class="fas fa-calendar-alt"></i> 04 Dec, 2024 - 20 Dec, 2024</p>
+                        <p class="project-desc">Developed a fully responsive front-end clone of the YouTube homepage using HTML and CSS. The clone replicates key UI components such as the video player layout, sidebar navigation, header bar, and video cards grid.</p>
+                        <div class="project-tags">
+                            <span class="tag-html"><i class="fab fa-html5"></i> HTML</span>
+                            <span class="tag-css"><i class="fab fa-css3-alt"></i> CSS</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://the-king-25.github.io/Youtube/" target="_blank" class="project-link demo"><i class="fas fa-external-link-alt"></i> Live Demo</a>
+                            <a href="https://github.com/the-king-25/Youtube" target="_blank" class="project-link code"><i class="fab fa-github"></i> Source Code</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-image">
+                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Simple Hotel Website (Basic)">
+                        <span class="badge badge-basic"><i class="fas fa-hotel"></i> Basic</span>
+                    </div>
+                    <div class="project-info">
+                        <h3>Hotel Website</h3>
+                        <p class="project-duration"><i class="fas fa-calendar-alt"></i> 09 Nov, 2024 - 14 Nov, 2024</p>
+                        <p class="project-desc">Developed a simple, clean, and responsive static website for a hotel business using HTML and CSS. The site includes key pages such as Home, About, Services, and Contact.</p>
+                        <div class="project-tags">
+                            <span class="tag-html"><i class="fab fa-html5"></i> HTML</span>
+                            <span class="tag-css"><i class="fab fa-css3-alt"></i> CSS</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://the-king-25.github.io/Hotel/" target="_blank" class="project-link demo"><i class="fas fa-external-link-alt"></i> Live Demo</a>
+                            <a href="https://github.com/the-king-25/Hotel" target="_blank" class="project-link code"><i class="fab fa-github"></i> Source Code</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-image">
+                        <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80" alt="E-Commerce Platform">
+                        <span class="badge badge-fullstack"><i class="fas fa-shopping-cart"></i> Full Stack</span>
+                    </div>
+                    <div class="project-info">
+                        <h3>E-Commerce Platform</h3>
+                        <p class="project-duration"><i class="fas fa-calendar-alt"></i> 15 Jan, 2025 - 30 Mar, 2025</p>
+                        <p class="project-desc">Developed a full-featured e-commerce platform with product listings, shopping cart, and secure checkout. Implemented user authentication, product search, and order management functionality.</p>
+                        <div class="project-tags">
+                            <span class="tag-react"><i class="fab fa-react"></i> React</span>
+                            <span class="tag-node"><i class="fab fa-node-js"></i> Node.js</span>
+                            <span class="tag-mongo"><i class="fas fa-database"></i> MongoDB</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" target="_blank" class="project-link demo"><i class="fas fa-external-link-alt"></i> Live Demo</a>
+                            <a href="#" target="_blank" class="project-link code"><i class="fab fa-github"></i> Source Code</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-image">
+                        <img src="https://images.unsplash.com/photo-1555066931-bf19f8fd1085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80" alt="Weather App">
+                        <span class="badge badge-api"><i class="fas fa-cloud-sun"></i> API Integration</span>
+                    </div>
+                    <div class="project-info">
+                        <h3>Weather Forecast App</h3>
+                        <p class="project-duration"><i class="fas fa-calendar-alt"></i> 05 Feb, 2025 - 20 Feb, 2025</p>
+                        <p class="project-desc">Created a responsive weather application that fetches real-time data from a weather API. Features include location-based forecasts, 5-day predictions, and dynamic weather animations based on current conditions.</p>
+                        <div class="project-tags">
+                            <span class="tag-js"><i class="fab fa-js"></i> JavaScript</span>
+                            <span class="tag-react"><i class="fab fa-react"></i> React</span>
+                            <span class="tag-css"><i class="fab fa-css3-alt"></i> CSS</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" target="_blank" class="project-link demo"><i class="fas fa-external-link-alt"></i> Live Demo</a>
+                            <a href="#" target="_blank" class="project-link code"><i class="fab fa-github"></i> Source Code</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="site-footer" id="contact">
+        <div class="footer-content">
+            <p>&copy; 2024 Bharath Kumar Gorle. All rights reserved.</p>
+            <div class="footer-socials">
+                <a href="https://github.com/online-in" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/bharath-kumar-gorle-78ba53333" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://x.com/bhara12549" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <div class="notification-toast" id="redirectNotification">
+        You're being redirected to login page
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyATnAziN-i_XuipwmNNL54Uo32Lp6gixIo",
+            authDomain: "personal-project-62960.firebaseapp.com",
+            projectId: "personal-project-62960",
+            storageBucket: "personal-project-62960.appspot.com",
+            messagingSenderId: "764447192852",
+            appId: "1:764447192852:web:185a024bcd9a1a504bf401",
+            measurementId: "G-NXDQT7BF8E"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        
+        // Show redirect notification
+        function showRedirectNotification() {
+            const notification = document.getElementById('redirectNotification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    window.location.href = 'auth.html';
+                }, 500);
+            }, 3000);
+        }
+        
+        // Check authentication status
+        auth.onAuthStateChanged(function(user) {
+            if (!user) {
+                showRedirectNotification();
+            }
+        });
+        
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobileMenuBtn');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            const mobileMenuClose = document.getElementById('mobileMenuClose');
+            
+            const toggleMenu = (show) => mobileMenuOverlay.classList.toggle('active', show);
+            
+            mobileMenuButton.addEventListener('click', () => toggleMenu(true));
+            mobileMenuClose.addEventListener('click', () => toggleMenu(false));
+            
+            mobileMenuOverlay.addEventListener('click', (e) => {
+                if (e.target === mobileMenuOverlay) toggleMenu(false);
+            });
+            
+            document.querySelectorAll('.mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => toggleMenu(false));
+            });
+
+            // Animation for project cards on scroll
+            const projectCards = document.querySelectorAll('.project-card');
+            
+            // Function to check if element is in viewport
+            function isInViewport(element) {
+                const rect = element.getBoundingClientRect();
+                return (
+                    rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8
+                );
+            }
+            
+            // Animate elements when they come into view
+            function animateOnScroll() {
+                projectCards.forEach((card, index) => {
+                    if (isInViewport(card)) {
+                        setTimeout(() => {
+                            card.classList.add('in-view');
+                        }, index * 150);
+                    }
+                });
+            }
+            
+            // Initial check and scroll event listener
+            animateOnScroll();
+            window.addEventListener('scroll', animateOnScroll);
+            
+            // Category filtering
+            const categoryBtns = document.querySelectorAll('.category-btn');
+            
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    btn.classList.add('active');
+                    
+                    // In a real implementation, this would filter projects
+                    // For this demo, we'll just show all projects
+                    document.querySelectorAll('.project-card').forEach(card => {
+                        card.style.display = 'flex';
+                    });
+                });
+            });
+            
+            // Function to update login/logout button
+            function updateAuthButton(user) {
+                const loginButtons = document.querySelectorAll('.login-btn');
+                
+                loginButtons.forEach(button => {
+                    if (user) {
+                        // User is logged in - show Logout
+                        button.textContent = 'Logout';
+                        button.onclick = () => {
+                            auth.signOut().then(() => {
+                                window.location.href = 'index.html';
+                            }).catch(error => {
+                                console.error('Sign out error', error);
+                            });
+                        };
+                    } else {
+                        // User is logged out - show Login
+                        button.textContent = 'Login';
+                        button.onclick = () => {
+                            window.location.href = 'auth.html';
+                        };
+                    }
+                });
+            }
+            
+            // Check auth state
+            auth.onAuthStateChanged(user => {
+                updateAuthButton(user);
+            });
+        });
+    </script>
+</body>
+</html>
